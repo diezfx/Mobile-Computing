@@ -14,10 +14,13 @@ import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.support.v4.content.ContextCompat.checkSelfPermission
 import android.Manifest
+import android.bluetooth.BluetoothGattCallback
+import android.bluetooth.le.ScanResult
 
 
 class MainActivity : AppCompatActivity() {
 
+    var gattService = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,12 +69,19 @@ class MainActivity : AppCompatActivity() {
 
         var mBluetoothManager: BluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
         var mBluetoothAdapter = mBluetoothManager.adapter
-        var callback: ScanCallback = ScanCallbackWeather()
+        var callback: ScanCallback = ScanCallbackWeather(this)
 
         Log.d("weatherapp", "start scanning")
         mBluetoothAdapter.bluetoothLeScanner.startScan(callback)
 
 
+    }
+
+
+
+    fun connectGatt(result: ScanResult?){
+        var gattback:BluetoothGattCallback=GattCallbackWeather()
+        var mBluetoothGatt=result?.device?.connectGatt(this, true, gattback);
     }
 
 
