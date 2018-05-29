@@ -16,15 +16,26 @@ import android.support.v4.content.ContextCompat.checkSelfPermission
 import android.Manifest
 import android.bluetooth.BluetoothGattCallback
 import android.bluetooth.le.ScanResult
+import android.os.ParcelUuid
+import android.bluetooth.le.ScanFilter
+import android.bluetooth.le.ScanSettings
+import android.widget.TextView
+import java.util.*
+import kotlin.concurrent.thread
 
 
 class MainActivity : AppCompatActivity() {
 
     var gattService = null
+    var humidity:TextView? = null
+    var temperature:TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        humidity = findViewById(R.id.humidityout)
+        temperature = findViewById(R.id.temperatureout)
 
         // activate bluetooth
         var mBluetoothManager: BluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
@@ -58,7 +69,7 @@ class MainActivity : AppCompatActivity() {
 
             startActivityForResult(enableBtIntent, Context.CONTEXT_INCLUDE_CODE);
         } else {
-            Log.d("weatherapp", "bluetooth already started")
+            Log.i("weatherapp", "bluetooth already started")
             startBluetoothScan()
         }
 
@@ -71,17 +82,31 @@ class MainActivity : AppCompatActivity() {
         var mBluetoothAdapter = mBluetoothManager.adapter
         var callback: ScanCallback = ScanCallbackWeather(this)
 
-        Log.d("weatherapp", "start scanning")
-        mBluetoothAdapter.bluetoothLeScanner.startScan(callback)
+        //val filter = ScanFilter.Builder().setServiceUuid(ParcelUuid.fromString("00000002-0000-0000-FDFD-FDFDFDFDFDFD")).build()
+        val filter = ScanFilter.Builder().setDeviceName("IPVSWeather").build()
+        var filterList:List<ScanFilter> = listOf(filter)
+        val scanSettings = ScanSettings.Builder().setScanMode(2).build()
+        Log.i("weatherapp", "start scanning")
+        mBluetoothAdapter.bluetoothLeScanner.startScan(filterList, scanSettings, callback)
 
 
     }
 
+    fun stopBluetoothScan() {
+
+        var mBluetoothManager: BluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
+        var mBluetoothAdapter = mBluetoothManager.adapter
+        var callback: ScanCallback = ScanCallbackWeather(this)
+
+        mBluetoothAdapter.bluetoothLeScanner.stopScan(callback)
+
+    }
 
 
     fun connectGatt(result: ScanResult?){
-        var gattback:BluetoothGattCallback=GattCallbackWeather()
-        var mBluetoothGatt=result?.device?.connectGatt(this, true, gattback);
+        Log.d("weatherapp", "it works")
+        var gattback:BluetoothGattCallback=GattCallbackWeather(this)
+        var mBluetoothGatt=result?.device?.connectGatt(this, true, gattback,2);
     }
 
 
@@ -109,6 +134,7 @@ class MainActivity : AppCompatActivity() {
 
         Log.d("weatherapp", "Bluetooth Acess granted")
         startBluetoothScan()
+
     }
 
 

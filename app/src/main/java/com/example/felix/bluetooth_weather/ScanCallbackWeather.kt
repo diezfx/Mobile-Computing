@@ -19,11 +19,12 @@ class ScanCallbackWeather(val mainActivity: MainActivity) :ScanCallback() {
 
     override fun onScanResult(callbackType: Int, result: ScanResult?) {
 
-        Log.d("weatherapp",result.toString())
-        Log.d("weatherapp", result?.device?.name)
-        super.onScanResult(callbackType, result)
+            Log.i("weatherapp",result.toString()+"hhhhh")
+            // Log.d("weatherapp", result?.device?.name)
+            super.onScanResult(callbackType, result)
+            mainActivity.stopBluetoothScan()
+            mainActivity.connectGatt(result)
 
-        mainActivity.connectGatt(result)
     }
 
     override fun onBatchScanResults(results: MutableList<ScanResult>?) {

@@ -1,20 +1,18 @@
 package com.example.felix.bluetooth_weather
 
-import android.bluetooth.BluetoothGatt
-import android.bluetooth.BluetoothGattCallback
-import android.bluetooth.BluetoothProfile
+import android.bluetooth.*
 import android.bluetooth.BluetoothProfile.STATE_CONNECTED
 import android.bluetooth.BluetoothProfile.STATE_DISCONNECTED
 import android.content.ContentValues.TAG
 import android.content.Context
 import android.util.Log
-import android.bluetooth.BluetoothAdapter
-import android.bluetooth.BluetoothManager
+import android.os.ParcelUuid
+import android.widget.TextView
+import java.util.*
 
 
 
-
-class GattCallbackWeather:BluetoothGattCallback(){
+class GattCallbackWeather(val mainActivity: MainActivity) :BluetoothGattCallback(){
 
 
     private var mBluetoothManager: BluetoothManager? = null
@@ -52,17 +50,41 @@ class GattCallbackWeather:BluetoothGattCallback(){
         }
     }
 
+    override fun onCharacteristicRead(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?, status: Int) {
+        super.onCharacteristicRead(gatt, characteristic, status)
+        if(characteristic?.uuid.toString() == "00002A6F-0000-3512-2118-0009af100700"){
+            mainActivity.humidity?.text = characteristic?.value.toString()
+        } else{
+            mainActivity.temperature?.text = characteristic?.value.toString()
+        }
 
+    }
+
+    override fun onCharacteristicChanged(gatt: BluetoothGatt?, characteristic: BluetoothGattCharacteristic?) {
+        super.onCharacteristicChanged(gatt, characteristic)
+
+        Log.i("weatherapp", "Notify")
+    }
 
     override fun onServicesDiscovered(gatt: BluetoothGatt?, status: Int) {
         super.onServicesDiscovered(gatt, status)
 
-        Log.d("weather app","hallo welt")
+        Log.i("weather app","hallo welt")
 
-        for (g in gatt!!.services){
-            Log.d("weather app", g.uuid.toString())
+        // service
+        var uuid = UUID.fromString("00000002-0000-0000-FDFD-FDFDFDFDFDFD")
 
-        }
+        var service: BluetoothGattService? = gatt?.getService(uuid)
+
+        // characteristic: humidity
+        gatt?.setCharacteristicNotification(service?.getCharacteristic(UUID.fromString("00002A6F-0000-3512-2118-0009af100700")),true)
+        gatt?.readCharacteristic(service?.getCharacteristic(UUID.fromString("00002A6F-0000-3512-2118-0009af100700")))
+
+        // characteristic: temperature
+        gatt?.setCharacteristicNotification(service?.getCharacteristic(UUID.fromString("00002A1C-0000-3512-2118-0009af100700")), true)
+        gatt?.readCharacteristic(service?.getCharacteristic(UUID.fromString("00002A1C-0000-3512-2118-0009af100700")))
+
+
     }
 
 }
