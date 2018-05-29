@@ -92,6 +92,8 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+
+
     fun stopBluetoothScan() {
 
         var mBluetoothManager: BluetoothManager = getSystemService(Context.BLUETOOTH_SERVICE) as BluetoothManager
